@@ -1,5 +1,5 @@
-my_api = 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2'
-class_api = 'sk-proj-wQ4taTDDFhbuDrmkqIlOT3BlbkFJlJVo8Zlx0wucOcJ2atou'
+const my_api = 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2'
+const class_api = 'sk-proj-wQ4taTDDFhbuDrmkqIlOT3BlbkFJlJVo8Zlx0wucOcJ2atou'
 
 let currentWindowId = null;
 let currentListener = null;
@@ -48,7 +48,7 @@ chrome.contextMenus.create({
       }
   });
 
-  async function improveSelectedText(selectedText, apiModel, temperature) {
+async function improveSelectedText(selectedText, apiModel, temperature) {
     const messages = [
       {
         role: "system",
@@ -60,48 +60,11 @@ chrome.contextMenus.create({
       }
     ];
   
-    try {
-      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
-      const improvedText = response.choices[0].message.content.trim();
-      console.log("Improved Text:", improvedText);
-  
-      if (currentWindowId !== null) {
-        chrome.windows.remove(currentWindowId);
-      }
-  
-      if (currentListener !== null) {
-        chrome.runtime.onMessage.removeListener(currentListener);
-      }
-  
-      currentWindowId = null;
-      currentListener = null;
-  
-      chrome.windows.create({
-        url: "popup.html",
-        type: "popup",
-        width: 400,
-        height: 300
-      }, function(window) {
-        currentWindowId = window.id;
-  
-        currentListener = function handleMessage(request, sender, sendResponse) {
-          if (request.action === "getImprovedText") {
-            sendResponse({ text: improvedText });
-
-          }
-        };
-        chrome.runtime.onMessage.addListener(currentListener);
-  
-        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
-        window.onRemoved.addListener(handlePopupWindowRemoved);
-      });
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    handle(messages, apiModel, temperature);
   }
   
 
-  async function improveSelectedTextCreative(selectedText, apiModel, temperature) {
+async function improveSelectedTextCreative(selectedText, apiModel, temperature) {
     const messages = [
       {
         role: "system",
@@ -113,44 +76,8 @@ chrome.contextMenus.create({
       }
     ];
   
-    try {
-      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
-      const improvedText = response.choices[0].message.content.trim();
-      console.log("Improved Text:", improvedText);
-  
-      if (currentWindowId !== null) {
-        chrome.windows.remove(currentWindowId);
-      }
-  
-      if (currentListener !== null) {
-        chrome.runtime.onMessage.removeListener(currentListener);
-      }
-  
-      currentWindowId = null;
-      currentListener = null;
-  
-      chrome.windows.create({
-        url: "popup.html",
-        type: "popup",
-        width: 400,
-        height: 300
-      }, function(window) {
-        currentWindowId = window.id;
-  
-        currentListener = function handleMessage(request, sender, sendResponse) {
-          if (request.action === "getImprovedText") {
-            sendResponse({ text: improvedText });
-          }
-        };
-        chrome.runtime.onMessage.addListener(currentListener);
-  
-        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
-        window.onRemoved.addListener(handlePopupWindowRemoved);
-      });
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
+    handle(messages, apiModel, temperature);
+}
   
 
 async function codeCommenter(selectedText) {
@@ -165,47 +92,7 @@ async function codeCommenter(selectedText) {
     }
   ];
 
-  try {
-    const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
-    const commentedCode = response.choices[0].message.content.trim();
-    console.log("Commented Code:", commentedCode);
-    saveToFile(commentedCode);
-
-    if (currentWindowId !== null) {
-      chrome.windows.remove(currentWindowId);
-    }
-
-    if (currentListener !== null) {
-      chrome.runtime.onMessage.removeListener(currentListener);
-    }
-
-    currentWindowId = null;
-    currentListener = null;
-
-    chrome.windows.create({
-      url: "popup.html",
-      type: "popup",
-      width: 400,
-      height: 300
-    }, function(window) {
-      currentWindowId = window.id;
-
-      currentListener = function handleMessage(request, sender, sendResponse) {
-        if (request.action === "getImprovedText") {
-          sendResponse({ text: commentedCode });
-          saveToFile(commentedCode);
-        }
-      };
-      chrome.runtime.onMessage.addListener(currentListener);
-
-      chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
-      window.onRemoved.addListener(handlePopupWindowRemoved);
-    });
-  }
-  catch (error) {
-    console.error("Error:", error);
-  }
-
+  handle(messages,'gpt-3.5-turbo' , 0.6);
   
 }
 
@@ -221,45 +108,7 @@ async function Summarizer(selectedText) {
       }
     ];
 
-    try {
-      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
-      const summarizedText = response.choices[0].message.content.trim();
-      console.log("Summarized Text:", summarizedText);
-
-      if (currentWindowId !== null) {
-        chrome.windows.remove(currentWindowId);
-      }
-
-      if (currentListener !== null) {
-        chrome.runtime.onMessage.removeListener(currentListener);
-      }
-
-      currentWindowId = null;
-      currentListener = null;
-
-      chrome.windows.create({
-        url: "popup.html",
-        type: "popup",
-        width: 400,
-        height: 300
-      }, function(window) {
-        currentWindowId = window.id;
-
-        currentListener = function handleMessage(request, sender, sendResponse) {
-          if (request.action === "getImprovedText") {
-            sendResponse({ text: summarizedText });
-          }
-        };
-        chrome.runtime.onMessage.addListener(currentListener);
-
-        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
-        window.onRemoved.addListener(handlePopupWindowRemoved);
-      });
-    }
-    catch (error) {
-      console.error("Error:", error);
-    }
-
+    handle(messages, 'gpt-3.5-turbo', 0.6);
 }
 
 async function Quizer(selectedText) { 
@@ -274,45 +123,7 @@ async function Quizer(selectedText) {
       }
     ];
     
-    try {
-      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
-      const quizText = response.choices[0].message.content.trim();
-      console.log("Quiz Text:", quizText);
-
-      if (currentWindowId !== null) {
-        chrome.windows.remove(currentWindowId);
-      }
-
-      if (currentListener !== null) {
-        chrome.runtime.onMessage.removeListener(currentListener);
-      }
-
-      currentWindowId = null;
-      currentListener = null;
-
-      chrome.windows.create({
-
-        url: "popup.html",
-        type: "popup",
-        width: 400,
-        height: 300
-      }, function(window) {
-        currentWindowId = window.id;
-
-        currentListener = function handleMessage(request, sender, sendResponse) {
-          if (request.action === "getImprovedText") {
-            sendResponse({ text: quizText });
-          }
-        }
-        chrome.runtime.onMessage.addListener(currentListener);
-
-        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
-        window.onRemoved.addListener(handlePopupWindowRemoved);
-      });
-    }
-    catch (error) {
-      console.error("Error:", error);
-    }
+    handle(messages, 'gpt-3.5-turbo', 0.6);
 }
 
 function saveToFile(data) {
@@ -324,6 +135,48 @@ function saveToFile(data) {
     saveAs: true
   });
 }
+
+async function handle(messages, apiModel, temperature) {
+  try {
+      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
+      const improvedText = response.choices[0].message.content.trim();
+      console.log("Improved Text:", improvedText);
+  
+      if (currentWindowId !== null) {
+        chrome.windows.remove(currentWindowId);
+      }
+  
+      if (currentListener !== null) {
+        chrome.runtime.onMessage.removeListener(currentListener);
+      }
+  
+      currentWindowId = null;
+      currentListener = null;
+  
+      chrome.windows.create({
+        url: "popup.html",
+        type: "popup",
+        width: 400,
+        height: 300
+      }, function(window) {
+        currentWindowId = window.id;
+  
+        currentListener = function handleMessage(request, sender, sendResponse) {
+          if (request.action === "getImprovedText") {
+            sendResponse({ text: improvedText });
+
+          }
+        };
+        chrome.runtime.onMessage.addListener(currentListener);
+  
+        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
+        window.onRemoved.addListener(handlePopupWindowRemoved);
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   // Fetch data from the OpenAI Chat Completion API
   async function fetchChatCompletion(messages, apiKey, apiModel, temperature) {
     try {
