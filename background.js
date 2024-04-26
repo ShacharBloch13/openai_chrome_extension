@@ -48,36 +48,34 @@ chrome.contextMenus.create({
       }
   });
 
-function improveSelectedText(selectedText, apiModel, temperature) {
-  var messages = [
-    {
-      role: "system",
-      content: "You are a harvard English professor. Your task is to improve the given text to make it more professional and grammatically correct."
-    },
-    {
-      role: "user",
-      content: "Improve the following text" + selectedText
-    }
-  ];
-
-  fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature)
-    .then(data => {
-      var improvedText = data.choices[0].message.content.trim();
+  async function improveSelectedText(selectedText, apiModel, temperature) {
+    const messages = [
+      {
+        role: "system",
+        content: "You are a Harvard English professor. Your task is to improve the given text to make it more professional and grammatically correct."
+      },
+      {
+        role: "user",
+        content: "Improve the following text: " + selectedText
+      }
+    ];
+  
+    try {
+      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
+      const improvedText = response.choices[0].message.content.trim();
       console.log("Improved Text:", improvedText);
-
-      // Close the previous window if it exists
+  
       if (currentWindowId !== null) {
         chrome.windows.remove(currentWindowId);
       }
-
-      // Remove the previous listener if it exists
+  
       if (currentListener !== null) {
         chrome.runtime.onMessage.removeListener(currentListener);
       }
-
+  
       currentWindowId = null;
       currentListener = null;
-      
+  
       chrome.windows.create({
         url: "popup.html",
         type: "popup",
@@ -85,55 +83,52 @@ function improveSelectedText(selectedText, apiModel, temperature) {
         height: 300
       }, function(window) {
         currentWindowId = window.id;
-
-        // Create a new listener with a closure
+  
         currentListener = function handleMessage(request, sender, sendResponse) {
           if (request.action === "getImprovedText") {
             sendResponse({ text: improvedText });
+
           }
         };
         chrome.runtime.onMessage.addListener(currentListener);
-
-        // Listen for the window being closed programmatically or manually
+  
         chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
         window.onRemoved.addListener(handlePopupWindowRemoved);
       });
-    })
-    .catch(error => {
+    } catch (error) {
       console.error("Error:", error);
-    });
-}
-
-function improveSelectedTextCreative(selectedText, apiModel, temperature) {
-  var messages = [
-    {
-      role: "system",
-      content: "You are the famous author Ernest Hemingway. Your task is to improve the given text to make it more creative and engaging."
-    },
-    {
-      role: "user",
-      content: "Improve the following text, like Ernest would" + selectedText
     }
-  ];
+  }
+  
 
-  fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature)
-    .then(data => {
-      var improvedText = data.choices[0].message.content.trim();
+  async function improveSelectedTextCreative(selectedText, apiModel, temperature) {
+    const messages = [
+      {
+        role: "system",
+        content: "You are the famous author Ernest Hemingway. Your task is to improve the given text to make it more creative and engaging."
+      },
+      {
+        role: "user",
+        content: "Improve the following text, like Ernest would: " + selectedText
+      }
+    ];
+  
+    try {
+      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
+      const improvedText = response.choices[0].message.content.trim();
       console.log("Improved Text:", improvedText);
-
-      // Close the previous window if it exists
+  
       if (currentWindowId !== null) {
         chrome.windows.remove(currentWindowId);
       }
-
-      // Remove the previous listener if it exists
+  
       if (currentListener !== null) {
         chrome.runtime.onMessage.removeListener(currentListener);
       }
-
+  
       currentWindowId = null;
       currentListener = null;
-      
+  
       chrome.windows.create({
         url: "popup.html",
         type: "popup",
@@ -141,24 +136,22 @@ function improveSelectedTextCreative(selectedText, apiModel, temperature) {
         height: 300
       }, function(window) {
         currentWindowId = window.id;
-
-        // Create a new listener with a closure
+  
         currentListener = function handleMessage(request, sender, sendResponse) {
           if (request.action === "getImprovedText") {
             sendResponse({ text: improvedText });
           }
         };
         chrome.runtime.onMessage.addListener(currentListener);
-
-        // Listen for the window being closed programmatically or manually
+  
         chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
         window.onRemoved.addListener(handlePopupWindowRemoved);
       });
-    })
-    .catch(error => {
+    } catch (error) {
       console.error("Error:", error);
-    });
-}
+    }
+  }
+  
 
 async function codeCommenter(selectedText) {
   const messages = [
