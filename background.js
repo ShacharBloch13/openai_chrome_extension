@@ -176,6 +176,7 @@ async function codeCommenter(selectedText) {
     const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
     const commentedCode = response.choices[0].message.content.trim();
     console.log("Commented Code:", commentedCode);
+    saveToFile(commentedCode);
 
     if (currentWindowId !== null) {
       chrome.windows.remove(currentWindowId);
@@ -211,6 +212,114 @@ async function codeCommenter(selectedText) {
   catch (error) {
     console.error("Error:", error);
   }
+
+  
+}
+
+async function Summarizer(selectedText) {
+    const messages = [
+      {
+        role: "system",
+        content: "You are a professional writer. Your task is to summarize the given text in no more than 5 sentences"
+      },
+      {
+        role: "user",
+        content: "Summarize the following text: " + selectedText
+      }
+    ];
+
+    try {
+      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
+      const summarizedText = response.choices[0].message.content.trim();
+      console.log("Summarized Text:", summarizedText);
+
+      if (currentWindowId !== null) {
+        chrome.windows.remove(currentWindowId);
+      }
+
+      if (currentListener !== null) {
+        chrome.runtime.onMessage.removeListener(currentListener);
+      }
+
+      currentWindowId = null;
+      currentListener = null;
+
+      chrome.windows.create({
+        url: "popup.html",
+        type: "popup",
+        width: 400,
+        height: 300
+      }, function(window) {
+        currentWindowId = window.id;
+
+        currentListener = function handleMessage(request, sender, sendResponse) {
+          if (request.action === "getImprovedText") {
+            sendResponse({ text: summarizedText });
+          }
+        };
+        chrome.runtime.onMessage.addListener(currentListener);
+
+        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
+        window.onRemoved.addListener(handlePopupWindowRemoved);
+      });
+    }
+    catch (error) {
+      console.error("Error:", error);
+    }
+
+}
+
+async function Quizer(selectedText) { 
+    const messages = [
+      {
+        role: "system",
+        content: "You are a gameshow host. Your task is to generate a quiz based on the given text. The quiz should have 10 questions with 4 answers each, and only one is correct. to the correct answer, add '-correct'"
+      },
+      {
+        role: "user",
+        content: "Generate a quiz based on the following text: " + selectedText
+      }
+    ];
+    
+    try {
+      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', 'gpt-3.5-turbo', 0.4);
+      const quizText = response.choices[0].message.content.trim();
+      console.log("Quiz Text:", quizText);
+
+      if (currentWindowId !== null) {
+        chrome.windows.remove(currentWindowId);
+      }
+
+      if (currentListener !== null) {
+        chrome.runtime.onMessage.removeListener(currentListener);
+      }
+
+      currentWindowId = null;
+      currentListener = null;
+
+      chrome.windows.create({
+
+        url: "popup.html",
+        type: "popup",
+        width: 400,
+        height: 300
+      }, function(window) {
+        currentWindowId = window.id;
+
+        currentListener = function handleMessage(request, sender, sendResponse) {
+          if (request.action === "getImprovedText") {
+            sendResponse({ text: quizText });
+          }
+        }
+        chrome.runtime.onMessage.addListener(currentListener);
+
+        chrome.windows.onRemoved.addListener(handlePopupWindowRemoved);
+        window.onRemoved.addListener(handlePopupWindowRemoved);
+      });
+    }
+    catch (error) {
+      console.error("Error:", error);
+    }
 }
 
 function saveToFile(data) {
