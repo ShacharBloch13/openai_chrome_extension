@@ -31,8 +31,8 @@ chrome.contextMenus.create({
 });
 
 chrome.contextMenus.create({
-    id: "summarizeToSingleParagraph",
-    title: "Summarize to a single paragraph",
+    id: "summarize",
+    title: "Summarize",
     contexts: ["selection"]
   });
 
@@ -59,7 +59,7 @@ chrome.contextMenus.create({
         improveSelectedText(info.selectionText);
     } else if (info.menuItemId === "addCommentsToCode") {
         codeCommenter(info.selectionText);
-    } else if (info.menuItemId === "summarizeToSingleParagraph") {
+    } else if (info.menuItemId === "summarize") {
         Summarizer(info.selectionText);
     } else if (info.menuItemId === "tranlateToEnglish") {
         translateToEnglish(info.selectionText);
@@ -166,7 +166,7 @@ async function Quizer(selectedText) {
     const messages = [
       {
         role: "system",
-        content: "You are a gameshow host. Your task is to generate a quiz based on the given text. The quiz should have 10 questions with 4 answers each, and only one is correct. to the correct answer, add '-correct'"
+        content: "You are a gameshow host. Your task is to generate a quiz based on the given text. The quiz should have 10 questions with 4 answers each, and only one is correct. to the correct answer, add '--correctAnswer'"
       },
       {
         role: "user",

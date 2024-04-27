@@ -1,20 +1,21 @@
-document.addEventListener('DOMContentLoaded', function() {
-  chrome.runtime.sendMessage({ action: "getImprovedText" }, function(response) {
-    const commentedCodeContainer = document.getElementById('commentedCode');
-    const quizLines = response.text.split('\n');
+document.addEventListener('DOMContentLoaded', () => {
+  chrome.runtime.sendMessage({ action: "getImprovedText" }, (response) => {
+    const containerForCodeComments = document.getElementById('commentedCode');
+    response.text.split('\n').forEach((line) => {
+      const elementForLine = document.createElement('div');
+      elementForLine.setAttribute('class', 'code-line');
 
-    quizLines.forEach(line => {
-      const lineElement = document.createElement('div');
-      lineElement.className = 'code-line';
-      const correctAnswerRegex = /(-correct)$/;
-      const match = line.match(correctAnswerRegex);
-      if (match) {
-        const correctAnswerLine = line.replace(correctAnswerRegex, '');
-        lineElement.innerHTML = `<span class="correct-answer">${correctAnswerLine}</span>`;
+      const regexForCorrectAnswer = /(--correctAnswer)$/;
+      let found = line.match(regexForCorrectAnswer);
+
+      if (found) {
+        line = line.replace(regexForCorrectAnswer, '');
+        elementForLine.innerHTML = `<span class="correct-answer">${line}</span>`;
       } else {
-        lineElement.textContent = line;
+        elementForLine.textContent = line;
       }
-      commentedCodeContainer.appendChild(lineElement);
+
+      containerForCodeComments.appendChild(elementForLine);
     });
 
     setupTextToSpeech(response.text);
