@@ -1,6 +1,7 @@
 const my_api = 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2'
 const class_api = 'sk-proj-wQ4taTDDFhbuDrmkqIlOT3BlbkFJlJVo8Zlx0wucOcJ2atou'
 
+
 let currentWindowId = null;
 let currentListener = null;
 
@@ -15,6 +16,13 @@ chrome.contextMenus.create({
   title: "Improve English - Creative",
   contexts: ["selection"]
 });
+
+chrome.contextMenus.create({
+  id: "improveEnglishProfessional",
+  title: "Improve English - Professional",
+  contexts: ["selection"]
+});
+
 
 chrome.contextMenus.create({
   id: "addCommentsToCode",
@@ -34,21 +42,33 @@ chrome.contextMenus.create({
     contexts: ["selection"]
   });
 
+  chrome.contextMenus.create({
+    id:"tranlateToEnglish",
+    title: "Translate to English",
+    contexts: ["selection"]
+  });
+
+
+
   chrome.contextMenus.onClicked.addListener(function(info, tab) {
     if (info.menuItemId === "improveEnglish") {
-      improveSelectedText(info.selectionText, 'gpt-3.5-turbo', 0.6);
+      improveSelectedText(info.selectionText);
     } else if (info.menuItemId === "improveEnglishCreative") {
-        improveSelectedTextCreative(info.selectionText, 'gpt-3.5-turbo', 0.9);
+        improveSelectedTextCreative(info.selectionText);
+    } else if (info.menuItemId === "improveEnglishProfessional") {
+        improveSelectedText(info.selectionText);
     } else if (info.menuItemId === "addCommentsToCode") {
         codeCommenter(info.selectionText);
     } else if (info.menuItemId === "summarizeToSingleParagraph") {
         Summarizer(info.selectionText);
+    } else if (info.menuItemId === "tranlateToEnglish") {
+        translateToEnglish(info.selectionText);
     } else if (info.menuItemId === "generateQuiz") {
         Quizer(info.selectionText);
       }
   });
 
-async function improveSelectedText(selectedText, apiModel, temperature) {
+async function improveSelectedText(selectedText) {
     const messages = [
       {
         role: "system",
@@ -60,11 +80,11 @@ async function improveSelectedText(selectedText, apiModel, temperature) {
       }
     ];
   
-    handle(messages, apiModel, temperature);
+    handle(messages, 'gpt-3.5-turbo', 0.5);
   }
   
 
-async function improveSelectedTextCreative(selectedText, apiModel, temperature) {
+async function improveSelectedTextCreative(selectedText) {
     const messages = [
       {
         role: "system",
@@ -76,9 +96,24 @@ async function improveSelectedTextCreative(selectedText, apiModel, temperature) 
       }
     ];
   
-    handle(messages, apiModel, temperature);
+    handle(messages, 'gpt-3.5-turbo', 0.9);
 }
   
+async function improveSelectedTextProfessional(selectedText) {
+    const messages = [
+      {
+        role: "system",
+        content: "You are a professional customer support agent, working with big clients. Your task is to improve the given text to make it more professional and engaging."
+      },
+      {
+        role: "user",
+        content: "Improve the following text: " + selectedText
+      }
+    ];
+  
+    handle(messages, 'gpt-3.5-turbo', 0.5);
+}
+
 
 async function codeCommenter(selectedText) {
   const messages = [
@@ -96,6 +131,21 @@ async function codeCommenter(selectedText) {
   
 }
 
+async function translateToEnglish(selectedText) {
+    const messages = [
+      {
+        role: "system",
+        content: "You are a professional translator. Your task is to translate the given text to English."
+      },
+      {
+        role: "user",
+        content: "Translate the following text: " + selectedText
+      }
+    ];
+
+    handle(messages, 'gpt-3.5-turbo', 0.6);
+}
+
 async function Summarizer(selectedText) {
     const messages = [
       {
@@ -110,6 +160,7 @@ async function Summarizer(selectedText) {
 
     handle(messages, 'gpt-3.5-turbo', 0.6);
 }
+
 
 async function Quizer(selectedText) { 
     const messages = [
@@ -138,7 +189,7 @@ function saveToFile(data) {
 
 async function handle(messages, apiModel, temperature) {
   try {
-      const response = await fetchChatCompletion(messages, 'sk-proj-X4WxzPQRqv7uHODr1lu9T3BlbkFJAutqnYkCxjEXv27qZvX2', apiModel, temperature);
+      const response = await fetchChatCompletion(messages, my_api, apiModel, temperature);
       const improvedText = response.choices[0].message.content.trim();
       console.log("Improved Text:", improvedText);
   
